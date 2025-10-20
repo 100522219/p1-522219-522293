@@ -94,11 +94,10 @@ try:
             f.write(f"  a{i+1} {pasajeros[i]}\n")
         f.write(";\n\nend;\n")
 
-#Si ocurre algún problema en la lectura
+#Si ocurre algún problema en la escritura
 except Exception:
     print(" No se pudo escribir en el fichero de salida")
     sys.exit(1)
-
 
 #Ruta absoluta para modelo y resultado
 modelo = os.path.join(script_dir, "parte-2-1.mod")
@@ -109,7 +108,6 @@ if not os.path.exists(modelo):
     print("No se encontró 'parte-2-1.mod'")
     sys.exit(1)
 
-
 #Ejecución GLPK
 try:
     #Ejecuta el comando glpsol en el sistema
@@ -119,6 +117,7 @@ try:
 except Exception as e:
     print("Error al ejecutar GLPK")
     sys.exit(1)
+
 
 #FALTA POR COMENTAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
@@ -162,6 +161,7 @@ for i, linea in enumerate(lineas):
             if i + 1 < len(lineas) and re.search(r"\*\s+1(\D|$)", lineas[i + 1]):
                 asignaciones.append((a, s))
 #FALTA POR COMENTAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 
 
