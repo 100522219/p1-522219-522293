@@ -118,16 +118,7 @@ except Exception as e:
     print("Error al ejecutar GLPK")
     sys.exit(1)
 
-
-#FALTA POR COMENTAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# ---------------- LEER RESULTADO DE GLPK ----------------
-# El fichero resultado.txt contiene el log completo del solver.
-# Buscamos:
-#   - Línea con "Objective:" → valor de la función objetivo.
-#   - Variables asignacion[a?,s?] con valor '* 1' en la línea siguiente.
-
-#Lectura de resultado GLPK
+#Lectura del fichero de resultados en fichero de resultados
 try:
     with open(resultado, "r", encoding="utf-8") as f:
         lineas = f.readlines()
@@ -137,16 +128,21 @@ except Exception:
 
 objetivo = None
 asignaciones = []
+filas = None
+columnas = None
 
-# Buscar valor del objetivo
+#Buscar valor del objetivo, restricciones y variables de decisión
 for linea in lineas:
     if "Objective:" in linea:
         mo = re.search(r"=\s*([-+]?\d+\.?\d*)", linea)
         if mo:
             objetivo = float(mo.group(1))
-        break
+    if "Rows:" in linea:
+        filas = int(re.search(r"Rows:\s+(\d+)", linea).group(1))
+    if "Columns:" in linea:
+        columnas = int(re.search(r"Columns:\s+(\d+)", linea).group(1))
 
-# Buscar asignaciones activas
+#Buscar variables asignadas con valor 1
 en_columnas = False
 for i, linea in enumerate(lineas):
     if linea.strip().startswith("No. Column name"):
@@ -158,17 +154,14 @@ for i, linea in enumerate(lineas):
         m_var = re.search(r"asignacion\[(a\d+),(s\d+)\]", linea)
         if m_var:
             a, s = m_var.group(1), m_var.group(2)
-            if i + 1 < len(lineas) and re.search(r"\*\s+1(\D|$)", lineas[i + 1]):
+            #Mira si el *1 está en esta línea o en la siguiente
+            if re.search(r"\*\s+1", linea) or (i + 1 < len(lineas) and re.search(r"\*\s+1", lineas[i + 1])):
                 asignaciones.append((a, s))
-#FALTA POR COMENTAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
 
 #Muestra de resultados
 print("\n------------RESULTADOS------------\n")
 
-print(f"Valor optimo funcion objetivo: min Perdida = {objetivo} | Variables de decision = {m*n} | Restricciones = {m+n+1}")
+print(f"Valor optimo funcion objetivo: min Perdida = {objetivo} | Número de variables de decisión = {columnas} | Número de restricciones = {filas}")
 #Si hay asignaciones de autobuses
 if asignaciones:
     print("\nAsignaciones optimas:")
@@ -180,7 +173,8 @@ else:
 
 #Lista de todos los autobuses
 todos_autobuses = [f"a{i+1}" for i in range(m)]
-# --- Determinar qué autobuses están asignados y cuáles no ---
+
+#Determinar autobuses asignados y no asignados
 
 #Creación de un conjunto con los autobuses que sí aparecen asignados
 asignados = set()
